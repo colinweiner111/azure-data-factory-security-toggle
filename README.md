@@ -18,21 +18,23 @@ This document explains what this change means and how to remediate impacted arch
 
 ## 📚 Table of Contents
 
-- [TL;DR](#-tldr)
-- [Background](#-background)
-- [Pre-Validation](#-pre-validation)
-- [Who May Be Affected](#-who-may-be-affected)
-- [Migration Options](#-migration-options)
-- [Existing ADF Migration](#-existing-adf-how-to-migrate-to-managed-vnet)
-- [No Customer VNet Options](#-no-customer-vnet-your-options)
-- [IP Allowlisting Details](#-option-2----ip-allowlisting)
-- [Failure Impact](#-what-happens-if-you-do-nothing)
-- [Common Failure Symptoms](#-common-failure-symptoms)
-- [Best Practices](#-best-practices)
-- [Key Takeaway](#-key-takeaway)
-- [Final Recommendation](#-final-recommendation)
+- [TL;DR](#tldr)
+- [Background](#background)
+- [Pre-Validation](#pre-validation)
+- [Who May Be Affected](#who-may-be-affected)
+- [Migration Options](#migration-options)
+- [Existing ADF Migration](#existing-adf-migration)
+- [No Customer VNet Options](#no-customer-vnet-options)
+- [IP Allowlisting Details](#ip-allowlisting-details)
+- [Failure Impact](#failure-impact)
+- [Common Failure Symptoms](#common-failure-symptoms)
+- [Best Practices](#best-practices)
+- [Key Takeaway](#key-takeaway)
+- [Final Recommendation](#final-recommendation)
 
 ---
+
+<a id="tldr"></a>
 
 # 🚨 TL;DR
 
@@ -55,6 +57,8 @@ This is a network behavior change, not an identity change. Managed Identity supp
 👉 If your pipeline works today without any network configuration, it is relying on the trusted services bypass and will fail after August 2026.
 
 ---
+
+<a id="background"></a>
 
 # 🧠 Background
 
@@ -79,6 +83,8 @@ Now:
 
 ---
 
+<a id="pre-validation"></a>
+
 # 🧪 Pre-Validation
 
 This feature flag simulates the post-retirement behavior by disabling the trusted services firewall bypass. It allows you to identify pipelines and linked services that will fail once the change is enforced.
@@ -91,6 +97,8 @@ Append to ADF Studio URL:
 
 ---
 
+<a id="who-may-be-affected"></a>
+
 # 👥 Who May Be Affected
 
 - Self-hosted Integration Runtime (SHIR) using managed identity with the trusted services firewall exception
@@ -102,6 +110,8 @@ Append to ADF Studio URL:
 If none of these apply, no action may be required.
 
 ---
+
+<a id="migration-options"></a>
 
 # 🛠️ Migration Options
 
@@ -165,6 +175,8 @@ The following sections provide more detailed guidance for specific deployment sc
 
 ---
 
+<a id="existing-adf-migration"></a>
+
 # 🔄 Existing ADF? How to Migrate to Managed VNet
 
 Existing Azure Data Factory instances do NOT need to be redeployed to use Managed Virtual Network.
@@ -212,6 +224,8 @@ To avoid disruption:
 
 ---
 
+<a id="no-customer-vnet-options"></a>
+
 # 🧭 No Customer VNet? Your Options
 
 ## 🥇 Option 1 --- ADF Managed VNet + Private Endpoints (Recommended)
@@ -233,6 +247,8 @@ Learn more:
 ✔ Simplest for customers
 
 ---
+
+<a id="ip-allowlisting-details"></a>
 
 ## 🥈 Option 2 --- IP Allowlisting
 
@@ -325,6 +341,8 @@ If you have no VNet, you cannot use them.
 
 ---
 
+<a id="failure-impact"></a>
+
 # ⚠️ What happens if you do nothing?
 
 If no action is taken before August 2026:
@@ -341,6 +359,8 @@ Learn more:
 
 ---
 
+<a id="common-failure-symptoms"></a>
+
 # 💥 Common Failure Symptoms
 
 - 403 Forbidden responses from Storage, SQL, or other target services
@@ -352,6 +372,8 @@ Learn more:
 👉 Authentication succeeds, but execution fails because network access is denied.
 
 ---
+
+<a id="best-practices"></a>
 
 # 🏆 Best Practices
 
@@ -366,11 +388,15 @@ Learn more:
 
 ---
 
+<a id="key-takeaway"></a>
+
 # 🔑 Key Takeaway
 
 If your solution works today without any networking configuration, it is relying on the trusted services firewall exception and will break after August 2026.
 
 ---
+
+<a id="final-recommendation"></a>
 
 # ✅ Final Recommendation
 
