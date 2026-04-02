@@ -16,6 +16,22 @@ Azure Data Factory will retire support for the trusted services firewall excepti
 
 This document explains what this change means and how to remediate impacted architectures.
 
+## 📚 Table of Contents
+
+- [TL;DR](#-tldr)
+- [Background](#-background)
+- [Pre-Validation](#-pre-validation)
+- [Who May Be Affected](#-who-may-be-affected)
+- [Migration Options](#-migration-options)
+- [Existing ADF Migration](#-existing-adf-how-to-migrate-to-managed-vnet)
+- [No Customer VNet Options](#-no-customer-vnet-your-options)
+- [IP Allowlisting Details](#-option-2----ip-allowlisting)
+- [Failure Impact](#-what-happens-if-you-do-nothing)
+- [Common Failure Symptoms](#-common-failure-symptoms)
+- [Best Practices](#-best-practices)
+- [Key Takeaway](#-key-takeaway)
+- [Final Recommendation](#-final-recommendation)
+
 ---
 
 # 🚨 TL;DR
@@ -229,6 +245,8 @@ Note: Azure Integration Runtime outbound IPs are not exposed in the Azure Data F
 Download Azure IP ranges (JSON): https://www.microsoft.com/en-us/download/details.aspx?id=56519
 
 When using the JSON file, look for the AzureDataFactory.<region> service tag corresponding to your Data Factory region.
+
+![Azure IP ranges JSON example](images/json-region.png)
 
 Learn more:
 - Azure Integration Runtime IP addresses: https://learn.microsoft.com/en-us/azure/data-factory/azure-integration-runtime-ip-addresses
