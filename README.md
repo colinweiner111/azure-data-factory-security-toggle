@@ -8,7 +8,7 @@
 
 ---
 
-## 📧 Upcoming ADF Security Change
+## Upcoming ADF Security Change
 
 Microsoft has notified customers of an upcoming security change in Azure Data Factory.
 
@@ -16,9 +16,27 @@ Azure Data Factory will retire support for the trusted services firewall excepti
 
 This document explains what this change means and how to remediate impacted architectures.
 
+## Table of Contents
+
+- [TL;DR](#tldr)
+- [Background](#background)
+- [Pre-Validation](#pre-validation)
+- [Who May Be Affected](#who-may-be-affected)
+- [Migration Options](#migration-options)
+- [Existing ADF Migration](#existing-adf-migration)
+- [No Customer VNet Options](#no-customer-vnet-options)
+- [IP Allowlisting Details](#ip-allowlisting-details)
+- [Failure Impact](#failure-impact)
+- [Common Failure Symptoms](#common-failure-symptoms)
+- [Best Practices](#best-practices)
+- [Key Takeaway](#key-takeaway)
+- [Final Recommendation](#final-recommendation)
+
 ---
 
-# 🚨 TL;DR
+<a id="tldr"></a>
+
+# TL;DR
 
 Today, Azure Data Factory can bypass Storage and Key Vault firewalls using the 'trusted Microsoft services' exception. After August 2026, that bypass is removed, so both identity and network access must be explicitly configured.
 
@@ -26,21 +44,23 @@ Azure Data Factory (ADF) is still a Microsoft service, but it will no longer be 
 
 This is a network behavior change, not an identity change. Managed Identity support remains.
 
-👉 You now need:
+You now need:
 
 - Managed Identity (who you are)
 - Network access (how you get there)
 
-👉 Both are now required. Identity without network access will fail.
+Both are now required. Identity without network access will fail.
 
-👉 Previously, this bypass was enabled on the **Storage Account / Key Vault firewall**, not in ADF itself.
+Previously, this bypass was enabled on the **Storage Account / Key Vault firewall**, not in ADF itself.
 
 
-👉 If your pipeline works today without any network configuration, it is relying on the trusted services bypass and will fail after August 2026.
+If your pipeline works today without any network configuration, it is relying on the trusted services bypass and will fail after August 2026.
 
 ---
 
-# 🧠 Background
+<a id="background"></a>
+
+# Background
 
 Previously:
 
@@ -63,7 +83,9 @@ Now:
 
 ---
 
-# 🧪 Pre-Validation
+<a id="pre-validation"></a>
+
+# Pre-Validation
 
 This feature flag simulates the post-retirement behavior by disabling the trusted services firewall bypass. It allows you to identify pipelines and linked services that will fail once the change is enforced.
 
@@ -71,11 +93,13 @@ Append to ADF Studio URL:
 
     feature.enableTrustMIToken=true
 
-👉 Use this early in your migration planning to surface any gaps in your network configuration before the August 2026 deadline.
+Use this early in your migration planning to surface any gaps in your network configuration before the August 2026 deadline.
 
 ---
 
-# 👥 Who May Be Affected
+<a id="who-may-be-affected"></a>
+
+# Who May Be Affected
 
 - Self-hosted Integration Runtime (SHIR) using managed identity with the trusted services firewall exception
 - Azure-SSIS Integration Runtime using managed identity with the trusted services firewall exception
@@ -87,14 +111,16 @@ If none of these apply, no action may be required.
 
 ---
 
-# 🛠️ Migration Options
+<a id="migration-options"></a>
+
+# Migration Options
 
 ## 1. Private Endpoints (Recommended)
 
 - ADF Managed VNet
 - Private Endpoints to Storage / Key Vault
 
-👉 See detailed implementation guidance below.
+See detailed implementation guidance below.
 
 ---
 
@@ -102,13 +128,13 @@ If none of these apply, no action may be required.
 
 - Add outbound IPs of SHIR / SSIS IR
 
-👉 See detailed guidance and limitations below.
+See detailed guidance and limitations below.
 
 ---
 
 ## 3. Service Endpoints (Customer VNet)
 
-👉 See detailed guidance below.
+See detailed guidance below.
 
 ### Requirements
 
@@ -134,7 +160,7 @@ If none of these apply, no action may be required.
 
 ---
 
-## 🧭 Quick Decision Guide
+## Quick Decision Guide
 
 | Scenario | Recommended Approach |
 |----------|----------------------|
@@ -149,7 +175,9 @@ The following sections provide more detailed guidance for specific deployment sc
 
 ---
 
-# 🔄 Existing ADF? How to Migrate to Managed VNet
+<a id="existing-adf-migration"></a>
+
+# Existing ADF? How to Migrate to Managed VNet
 
 Existing Azure Data Factory instances do NOT need to be redeployed to use Managed Virtual Network.
 
@@ -180,7 +208,7 @@ ADF -> Managed VNet IR -> Private Endpoint -> Storage / Key Vault
 
 If linked services continue to use the default Azure Integration Runtime, they will still rely on the old network path and will fail after the trusted services exception is removed.
 
-## ⚠️ Will this break existing pipelines?
+## Will this break existing pipelines?
 
 Yes--if you enable Managed Virtual Network without updating your configuration.
 
@@ -192,13 +220,15 @@ To avoid disruption:
 - Update linked services to use the new runtime
 - Test before cutover
 
-👉 This should be treated as a migration, not a configuration toggle.
+This should be treated as a migration, not a configuration toggle.
 
 ---
 
-# 🧭 No Customer VNet? Your Options
+<a id="no-customer-vnet-options"></a>
 
-## 🥇 Option 1 --- ADF Managed VNet + Private Endpoints (Recommended)
+# No Customer VNet? Your Options
+
+## Option 1 --- ADF Managed VNet + Private Endpoints (Recommended)
 
 - No customer-managed VNet needed — Microsoft provisions and manages the VNet for you
 - ADF connects to your **data sources** (Storage, SQL, ADLS, Key Vault, etc.) via Managed Private Endpoints (into the target service), not directly into your customer VNet.
@@ -213,12 +243,14 @@ Learn more:
 
 > **What you do NOT need:** your own VNet, subnet, NSG, route table, VNet peering, or Self-Hosted IR
 
-✔ Best long-term solution\
-✔ Simplest for customers
+Best long-term solution\
+Simplest for customers
 
 ---
 
-## 🥈 Option 2 --- IP Allowlisting
+<a id="ip-allowlisting-details"></a>
+
+## Option 2 --- IP Allowlisting
 
 - Allow outbound IPs of ADF IR / SHIR on each target service firewall
 - Works as a short-term bridge, but expect periodic IP range updates
@@ -230,17 +262,19 @@ Download Azure IP ranges (JSON): https://www.microsoft.com/en-us/download/detail
 
 When using the JSON file, look for the AzureDataFactory.<region> service tag corresponding to your Data Factory region.
 
+![Azure IP ranges JSON example](images/json-region.png)
+
 Learn more:
 - Azure Integration Runtime IP addresses: https://learn.microsoft.com/en-us/azure/data-factory/azure-integration-runtime-ip-addresses
 - Self-hosted Integration Runtime: https://learn.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime
 
-✔ Quick fix\
-❌ Not scalable\
-❌ Maintenance overhead
+Quick fix\
+Not scalable\
+Maintenance overhead
 
 ---
 
-## ⚠️ Using Firewall Rules Instead of Private Access
+## Using Firewall Rules Instead of Private Access
 
 This is a supported but operationally intensive approach and is not recommended for long-term production use.
 
@@ -257,7 +291,7 @@ If you choose not to use Managed VNet, Private Endpoints, or a customer VNet, yo
     - Allow the outbound IP of the host machine
     - This is more stable and predictable
 
-## 🔎 How to Identify Azure Integration Runtime IP Ranges
+## How to Identify Azure Integration Runtime IP Ranges
 
 To allow Azure Data Factory (ADF) Azure Integration Runtime traffic through firewalls, you must allow the outbound IP ranges for the region where your Data Factory is deployed.
 
@@ -268,7 +302,7 @@ Steps:
     https://learn.microsoft.com/en-us/azure/data-factory/azure-integration-runtime-ip-addresses
 3. Locate the section for your region
 4. Allow all listed IP ranges in:
-    👉 You must allow the full set of IP ranges for your region, not just those observed during testing.
+    You must allow the full set of IP ranges for your region, not just those observed during testing.
     - Azure Storage firewall
     - Azure Key Vault firewall
 
@@ -279,9 +313,9 @@ Steps:
 - Microsoft may update these ranges periodically
 - You must keep firewall rules up to date to avoid service disruptions
 
-👉 For more predictable and secure connectivity, consider using Private Endpoints instead of IP allowlisting.
+For more predictable and secure connectivity, consider using Private Endpoints instead of IP allowlisting.
 
-### 🔍 Optional — Validate Using Network Security Perimeter (NSP)
+### Optional — Validate Using Network Security Perimeter (NSP)
 
 Network Security Perimeter (NSP) in audit mode can be used to observe access attempts and validate which source IP addresses Azure Data Factory is actively using.
 
@@ -290,24 +324,26 @@ This can help:
 - Identify active IPs during testing or troubleshooting
 - Provide visibility into real traffic patterns
 
-⚠️ Important:
+Important:
 - NSP shows observed traffic, not all possible outbound IPs
 - It should NOT be used as the sole source for firewall allowlisting
 
-👉 Microsoft's published Azure Integration Runtime IP ranges are the authoritative source for firewall configuration.
+Microsoft's published Azure Integration Runtime IP ranges are the authoritative source for firewall configuration.
 
-👉 Managed Identity alone is not sufficient. Network access must be explicitly permitted.
+Managed Identity alone is not sufficient. Network access must be explicitly permitted.
 
 ---
 
-## ⚠️ Important Note
+## Important Note
 
 Service Endpoints REQUIRE a VNet.\
 If you have no VNet, you cannot use them.
 
 ---
 
-# ⚠️ What happens if you do nothing?
+<a id="failure-impact"></a>
+
+# What happens if you do nothing?
 
 If no action is taken before August 2026:
 
@@ -315,7 +351,7 @@ If no action is taken before August 2026:
 - Failures will occur at runtime when accessing Storage, Key Vault, or other protected services
 - These failures may not be immediately obvious until pipelines execute
 
-👉 This is a breaking change and requires proactive remediation.
+This is a breaking change and requires proactive remediation.
 
 Learn more:
 - Azure updates (track service retirement/change notices): https://azure.microsoft.com/updates/
@@ -323,7 +359,9 @@ Learn more:
 
 ---
 
-# 💥 Common Failure Symptoms
+<a id="common-failure-symptoms"></a>
+
+# Common Failure Symptoms
 
 - 403 Forbidden responses from Storage, SQL, or other target services
 - "Client IP address is not authorized" firewall errors
@@ -331,11 +369,13 @@ Learn more:
 - Storage firewall denies (blob, dfs, queue, or table access)
 - Pipeline timeouts during linked service tests or activity runtime
 
-👉 Authentication succeeds, but execution fails because network access is denied.
+Authentication succeeds, but execution fails because network access is denied.
 
 ---
 
-# 🏆 Best Practices
+<a id="best-practices"></a>
+
+# Best Practices
 
 - Use Private Endpoints for production
 - Separate identity and network controls
@@ -348,13 +388,17 @@ Learn more:
 
 ---
 
-# 🔑 Key Takeaway
+<a id="key-takeaway"></a>
+
+# Key Takeaway
 
 If your solution works today without any networking configuration, it is relying on the trusted services firewall exception and will break after August 2026.
 
 ---
 
-# ✅ Final Recommendation
+<a id="final-recommendation"></a>
+
+# Final Recommendation
 
 - Preferred: Managed Identity + Private Endpoints (Managed VNet if no VNet exists)
 - Acceptable fallback: Service Endpoints (requires VNet)
